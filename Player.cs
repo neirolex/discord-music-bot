@@ -1,0 +1,38 @@
+using Vlc.DotNet.Core;
+
+namespace discord_music_bot
+{
+    public class Player
+    {
+        private static DirectoryInfo libDirectory = new DirectoryInfo(Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "libvlc", IntPtr.Size == 4 ? "win-x86" : "win-x64"));
+        VlcMediaPlayer mediaPlayer = new Vlc.DotNet.Core.VlcMediaPlayer(libDirectory);
+        private IList<AudioFile> _queue = new List<AudioFile>();
+        private int _currentTrackId;
+
+        public Player() { 
+            _currentTrackId = 0;
+        }
+        public void Play() {
+            mediaPlayer.SetMedia(_queue[_currentTrackId].GetFileInfo());
+            mediaPlayer.Play();
+        }
+        public void Stop() => mediaPlayer.Stop();
+        public void Pause() => mediaPlayer.Pause();
+        public void Next() {
+            if(_currentTrackId+1 < _queue.Count) {
+                _currentTrackId++;
+                mediaPlayer.SetMedia(_queue[_currentTrackId].GetFileInfo());
+                mediaPlayer.Play();
+            }
+        }
+        public void Prev() {
+            if(_currentTrackId > 0) {
+                _currentTrackId--;
+                mediaPlayer.SetMedia(_queue[_currentTrackId].GetFileInfo());
+                mediaPlayer.Play();
+            }
+        }
+        public void AddToQueue(AudioFile track) => _queue.Add(track);
+        public void RemoveFromQueue(int id) => _queue.RemoveAt(id);
+    }
+}
