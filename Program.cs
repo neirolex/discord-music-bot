@@ -28,6 +28,10 @@ namespace discord_music_bot {
             //Initialize discorde client
             var discordClient = _services.GetService<DiscordClient>();
 
+            //This should only runs once for registering new commands
+            //Takes 1 hour to register
+            //DO NOT run on every start or connection
+
             //Initialize music player
             var player = _services.GetService<Player>();
 
