@@ -1,8 +1,25 @@
-﻿namespace discord_music_bot {
+﻿using discord_music_bot.discord;
+
+namespace discord_music_bot {
     public class Program
     {
-        public static void Main(string[] args)
+        public static Task Main(string[] args) => new Program().MainAsync();
+
+        public async Task MainAsync()
         {
+            //InitializeMusicPlayer();
+            InitializeDiscordBot();
+
+            // Block this task until the program is closed.
+            await Task.Delay(Timeout.Infinite);
+        }
+
+        private void InitializeDiscordBot() {
+            Client c = new Client();
+            c.Init();
+        }
+
+        private void InitializeMusicPlayer() {
             Player p = new Player();
 
             AudioFile track1 = new AudioFile("C:\\_work\\_repo\\discord-music-bot\\tracks\\track1.mp3");
