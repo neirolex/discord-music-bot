@@ -41,15 +41,16 @@ namespace discord_music_bot {
         [SlashCommand("play", "play", runMode: Discord.Interactions.RunMode.Async)]
         public async Task PlayCurrentTrack(IVoiceChannel channel = null)
         {
-            var path = "tracks/track1.mp3";
-            var fileInfo = new FileInfo(path);
-            _client.AudioService.CreateStream(path); //start local process with ffmpeg
             channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
             var audioClient = await channel.ConnectAsync(); //Conect to audio channel
             //TODO: Error - "Task was canceled" if playing after joining;
             
+            var path = "tracks/track1.mp3";
+            var fileInfo = new FileInfo(path);
             _client.AudioService.Play = true;
-            var tsk = new Task(async () => { await _client.AudioService.StartTranslateAudio(audioClient, path); }); //translating stream from ffmpeg to discord audio stream
+            var tsk = new Task(async () => { 
+                await _client.AudioService.InitPlaying(audioClient, path); //translating stream from ffmpeg to discord audio stream
+                });
             tsk.Start();
 
             await RespondAsync($"{fileInfo.Name} is now playing");

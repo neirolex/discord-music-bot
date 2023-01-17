@@ -7,7 +7,16 @@ namespace discord_music_bot
     public class DiscordAudioService {
         public bool Play = true;
 
-        public Process CreateStream(string path)
+        public DiscordAudioService() {
+            
+        }
+
+        public async Task InitPlaying(IAudioClient client, string path) {
+            CreateStream(path);
+            await StartTranslateAudio(client, path);
+        }
+
+        private Process CreateStream(string path)
         {
             return Process.Start(new ProcessStartInfo
             {
@@ -18,7 +27,7 @@ namespace discord_music_bot
             });
         }
 
-        public async Task StartTranslateAudio(IAudioClient client, string path)
+        private async Task StartTranslateAudio(IAudioClient client, string path)
         {
             using (var ffmpeg = CreateStream(path)) //Create stream based on ffmpeg binary
             using (var ffstream = ffmpeg.StandardOutput.BaseStream)
