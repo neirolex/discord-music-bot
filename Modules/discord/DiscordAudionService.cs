@@ -17,7 +17,7 @@ namespace discord_music_bot
             await StartTranslateAudio(client, path);
         }
 
-        public async Task StopPlaying() {
+        public void StopPlaying() {
             _play = false;
         }
 
@@ -47,6 +47,7 @@ namespace discord_music_bot
                             while ((read = ffstream.Read(buffer, 0, buffer.Length)) > 0 && _play)
                             {
                                 await discord.WriteAsync(buffer); //Writing bytes to discord audio stream in realtime
+                                //TODO: Fix "task/operation was canceled" when /next commaned invoked
                             }
                         });
                         task.Start();

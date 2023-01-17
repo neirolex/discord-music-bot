@@ -39,7 +39,6 @@ public class Program
         private ServiceProvider ConfigureServices()
         {
             return new ServiceCollection()
-                .AddSingleton(_config)
                 .AddSingleton<FilePlayer>()
                 .AddSingleton<DiscordAudioService>()
                 .AddSingleton<DiscordSocketClient>()

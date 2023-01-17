@@ -1,4 +1,5 @@
 using Discord;
+using Discord.Audio;
 using Discord.Interactions;
 
 using System.Text;
@@ -9,6 +10,7 @@ namespace discord_music_bot {
         //Dependencies can be accessed through Property injection, public properties with public setters will be set by the service provider
         private CommandHandler _handler;
         private DiscordClient _client;
+        private IAudioClient _audioClient;
         private FilePlayer _player;
 
         //Constructor injection is also a valid way to access the dependecies
@@ -25,7 +27,7 @@ namespace discord_music_bot {
             //Get the audio channel
             channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
             if (channel == null) { await Context.Channel.SendMessageAsync("You must be in a voice channel."); return; }
-            var audioClient = await channel.ConnectAsync();
+            _audioClient = await channel.ConnectAsync();
             await RespondAsync($"Bot joined to the channel {channel.Name}");
         }
 
@@ -33,11 +35,12 @@ namespace discord_music_bot {
         public async Task LeaveChannel(IVoiceChannel channel = null)
         {
             //Get the audio channel
-            await _client.AudioService.StopPlaying();
+            _client.AudioService.StopPlaying();
             await Task.Delay(1000); //To avoid error of interupting audio stream before it's closed; TODO: fix the error, find another way;
 
             channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
             await channel.DisconnectAsync();
+            _audioClient.Dispose();
             await RespondAsync($"Bot left the channel");
         }
 
@@ -45,13 +48,32 @@ namespace discord_music_bot {
         public async Task PlayCurrentTrack(IVoiceChannel channel = null)
         {
             channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
-            var audioClient = await channel.ConnectAsync(); //Conect to audio channel
-            //TODO: Error - "Task was canceled" if playing after joining;
+            if(_audioClient == null) {
+                _audioClient = await channel.ConnectAsync();
+            }
             
-            var path = "tracks/track1.mp3";
-            var fileInfo = new FileInfo(path);
+            var fileInfo = _player.GetCurrentTrack().GetFileInfo();
             var tsk = new Task(async () => { 
-                await _client.AudioService.InitPlaying(audioClient, path); //translating stream from ffmpeg to discord audio stream
+                await _client.AudioService.InitPlaying(_audioClient, fileInfo.FullName); //translating stream from ffmpeg to discord audio stream
+                });
+            tsk.Start();
+
+            await RespondAsync($"{fileInfo.Name} is now playing");
+        }
+
+        [SlashCommand("next", "next", runMode: Discord.Interactions.RunMode.Async)]
+        public async Task PlayNextTrack(IVoiceChannel channel = null)
+        {            
+            channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
+            if(_audioClient == null) {
+                _audioClient = await channel.ConnectAsync();
+            }
+
+            _client.AudioService.StopPlaying(); //Stop playing current track (to avoid interrupt stream)
+            _player.Next(); //Increase current playing track index
+            var fileInfo = _player.GetCurrentTrack().GetFileInfo();
+            var tsk = new Task(async () => { 
+                await _client.AudioService.InitPlaying(_audioClient, fileInfo.FullName); //translating stream from ffmpeg to discord audio stream
                 });
             tsk.Start();
 
@@ -61,7 +83,7 @@ namespace discord_music_bot {
         [SlashCommand("stop", "stop", runMode: Discord.Interactions.RunMode.Async)]
         public async Task StopPlaying(IVoiceChannel channel = null)
         {
-            await _client.AudioService.StopPlaying();
+            _client.AudioService.StopPlaying();
             await RespondAsync($"Playing stoped");
         }
     

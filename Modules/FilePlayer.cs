@@ -4,8 +4,6 @@ namespace discord_music_bot
 {
     public class FilePlayer
     {
-        private static DirectoryInfo libDirectory = new DirectoryInfo(Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "libvlc", IntPtr.Size == 4 ? "win-x86" : "win-x64"));
-        VlcMediaPlayer mediaPlayer = new Vlc.DotNet.Core.VlcMediaPlayer(libDirectory);
         private IList<AudioFile> _queue = new List<AudioFile>();
         private int _currentTrackId;
 
@@ -19,28 +17,21 @@ namespace discord_music_bot
             AddToQueue(track2);
         }
         
-        public void Play() {
-            mediaPlayer.SetMedia(_queue[_currentTrackId].GetFileInfo());
-            mediaPlayer.Play();
-        }
+        public void Play(){}
         
-        public void Stop() => mediaPlayer.Stop();
+        public void Stop(){}
         
-        public void Pause() => mediaPlayer.Pause();
+        public void Pause(){}
         
         public void Next() {
             if(_currentTrackId+1 < _queue.Count) {
                 _currentTrackId++;
-                mediaPlayer.SetMedia(_queue[_currentTrackId].GetFileInfo());
-                mediaPlayer.Play();
             }
         }
         
         public void Prev() {
             if(_currentTrackId > 0) {
                 _currentTrackId--;
-                mediaPlayer.SetMedia(_queue[_currentTrackId].GetFileInfo());
-                mediaPlayer.Play();
             }
         }
         
@@ -52,6 +43,14 @@ namespace discord_music_bot
             return result;
         }
 
+        public void SetCurrentTrack(int index) {
+            _currentTrackId = index;
+        }
+
+        public AudioFile GetCurrentTrack() {
+            return _queue[_currentTrackId];
+        }
+        
         public void AddToQueue(AudioFile track) => _queue.Add(track);
         
         public void RemoveFromQueue(int id) => _queue.RemoveAt(id);
