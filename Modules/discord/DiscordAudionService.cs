@@ -5,7 +5,7 @@ using Discord.Audio;
 namespace discord_music_bot
 {    
     public class DiscordAudioService {
-        public bool Play = true;
+        private bool _play = false;
 
         public DiscordAudioService() {
             
@@ -13,7 +13,12 @@ namespace discord_music_bot
 
         public async Task InitPlaying(IAudioClient client, string path) {
             CreateStream(path);
+            _play = true;
             await StartTranslateAudio(client, path);
+        }
+
+        public async Task StopPlaying() {
+            _play = false;
         }
 
         private Process CreateStream(string path)
@@ -39,7 +44,7 @@ namespace discord_music_bot
                     {
                         int read;
                         var task = new Task(async () => {
-                            while ((read = ffstream.Read(buffer, 0, buffer.Length)) > 0 && Play)
+                            while ((read = ffstream.Read(buffer, 0, buffer.Length)) > 0 && _play)
                             {
                                 await discord.WriteAsync(buffer); //Writing bytes to discord audio stream in realtime
                             }

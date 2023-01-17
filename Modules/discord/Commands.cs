@@ -30,7 +30,7 @@ namespace discord_music_bot {
         public async Task LeaveChannel(IVoiceChannel channel = null)
         {
             //Get the audio channel
-            _client.AudioService.Play = false;
+            await _client.AudioService.StopPlaying();
             await Task.Delay(1000); //To avoid error of interupting audio stream before it's closed; TODO: fix the error, find another way;
 
             channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
@@ -47,7 +47,6 @@ namespace discord_music_bot {
             
             var path = "tracks/track1.mp3";
             var fileInfo = new FileInfo(path);
-            _client.AudioService.Play = true;
             var tsk = new Task(async () => { 
                 await _client.AudioService.InitPlaying(audioClient, path); //translating stream from ffmpeg to discord audio stream
                 });
@@ -59,7 +58,7 @@ namespace discord_music_bot {
         [SlashCommand("stop", "stop", runMode: Discord.Interactions.RunMode.Async)]
         public async Task StopPlaying(IVoiceChannel channel = null)
         {
-            _client.AudioService.Play = false;
+            await _client.AudioService.StopPlaying();
             await RespondAsync($"Playing stoped");
         }
     }
