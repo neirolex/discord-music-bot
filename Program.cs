@@ -2,10 +2,11 @@
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
 
 namespace discord_music_bot
 {
-class Program
+public class Program
     {
         // setup our fields we assign later
         private readonly IConfiguration _config;
@@ -20,15 +21,17 @@ class Program
             _config = _builder.Build();
         }
 
-        public static Task Main(string[] args) => new Program().MainAsync();
+        public static Task Main(string[] args) => new Program().MainAsync(args);
 
-        public async Task MainAsync()
+        public async Task MainAsync(string[] args)
         {
             using (var services = ConfigureServices())
             {
                 await services.GetRequiredService<DiscordClient>().Init();
 
-                await Task.Delay(Timeout.Infinite);
+                var builder = WebApplication.CreateBuilder(args);
+                var app = builder.Build();
+                app.Run();
             }
         }
 
