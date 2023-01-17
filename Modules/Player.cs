@@ -11,6 +11,39 @@ namespace discord_music_bot
 
         public Player() { 
             _currentTrackId = 0;
+
+            AudioFile track1 = new AudioFile("C:\\_work\\_repo\\discord-music-bot\\tracks\\track1.mp3");
+            AddToQueue(track1);
+
+            AudioFile track2 = new AudioFile("C:\\_work\\_repo\\discord-music-bot\\tracks\\track2.mp3");
+            AddToQueue(track2);
+
+            // while(true) {
+            //     var command = Console.ReadLine();
+            //     switch(command) {
+            //         case "play": {
+            //             player.Play();
+            //             break;
+            //         }
+            //         case "pause": {
+            //             player.Pause();
+            //             break;
+            //         }
+            //         case "stop": {
+            //             player.Stop();
+            //             break;
+            //         }
+            //         case "next": {
+            //             player.Next();
+            //             break;
+            //         }
+            //         case "prev": {
+            //             player.Prev();
+            //             break;
+            //         }
+            //     }
+            // }
+
         }
         public void Play() {
             mediaPlayer.SetMedia(_queue[_currentTrackId].GetFileInfo());
