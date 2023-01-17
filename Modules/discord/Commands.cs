@@ -1,6 +1,7 @@
 using Discord;
 using Discord.Interactions;
-using Discord.Audio;
+
+using System.Text;
 
 namespace discord_music_bot {
     public class Commands : InteractionModuleBase<SocketInteractionContext>
@@ -8,12 +9,14 @@ namespace discord_music_bot {
         //Dependencies can be accessed through Property injection, public properties with public setters will be set by the service provider
         private CommandHandler _handler;
         private DiscordClient _client;
+        private FilePlayer _player;
 
         //Constructor injection is also a valid way to access the dependecies
-        public Commands (CommandHandler handler, DiscordClient client)
+        public Commands (CommandHandler handler, DiscordClient client, FilePlayer player)
         {
             _handler = handler;
             _client = client;
+            _player = player;
         }
 
         [SlashCommand("join", "join", runMode: Discord.Interactions.RunMode.Async)]
@@ -60,6 +63,17 @@ namespace discord_music_bot {
         {
             await _client.AudioService.StopPlaying();
             await RespondAsync($"Playing stoped");
+        }
+    
+        [SlashCommand("queue", "queue", runMode: Discord.Interactions.RunMode.Async)]
+        public async Task ShowQueue() {
+            var q = _player.ListQueue();
+            var builder = new StringBuilder("Tracks in queue: \r\n");
+            foreach(var i in q) {
+                builder.Append($"{i.Key}: {i.Value.Name} \r\n");
+            }
+
+            await RespondAsync(builder.ToString());
         }
     }
 }
