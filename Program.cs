@@ -4,6 +4,8 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+namespace discord_music_bot
+{
 class Program
     {
         // setup our fields we assign later
@@ -86,6 +88,7 @@ class Program
                 .AddSingleton<DiscordSocketClient>()
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
                 .AddSingleton<CommandHandler>()
+                .AddSingleton<DiscordClient>()
                 .BuildServiceProvider();
         }
 
@@ -98,3 +101,4 @@ class Program
             #endif
         }
     }
+}
