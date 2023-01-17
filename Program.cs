@@ -85,10 +85,11 @@ class Program
         {
             return new ServiceCollection()
                 .AddSingleton(_config)
+                .AddSingleton<DiscordAudioService>()
                 .AddSingleton<DiscordSocketClient>()
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
                 .AddSingleton<CommandHandler>()
-                .AddSingleton<DiscordClient>()
+                .AddSingleton(x => new DiscordClient(x.GetRequiredService<DiscordAudioService>()))
                 .BuildServiceProvider();
         }
 

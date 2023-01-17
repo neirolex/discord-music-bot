@@ -6,7 +6,15 @@ namespace discord_music_bot
 {
     public class DiscordClient
     {
+        public DiscordAudioService AudioService; //TODO: Incapslate, make private
+        public DiscordClient(DiscordAudioService audioService) {
+            AudioService = audioService;
+        }
+    }
+
+    public class DiscordAudioService {
         public bool Play = true;
+
         public Process CreateStream(string path)
         {
             return Process.Start(new ProcessStartInfo
