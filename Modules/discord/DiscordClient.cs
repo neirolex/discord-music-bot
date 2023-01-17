@@ -6,6 +6,7 @@ namespace discord_music_bot
 {
     public class DiscordClient
     {
+        public bool Play = true;
         public Process CreateStream(string path)
         {
             return Process.Start(new ProcessStartInfo
@@ -17,13 +18,27 @@ namespace discord_music_bot
             });
         }
 
-        public async Task SendAsync(IAudioClient client, string path)
+        public async Task StartTranslateAudio(IAudioClient client, string path)
         {
             using (var ffmpeg = CreateStream(path)) //Create stream based on ffmpeg binary
-            using (var output = ffmpeg.StandardOutput.BaseStream)
+            using (var ffstream = ffmpeg.StandardOutput.BaseStream)
             using (var discord = client.CreatePCMStream(AudioApplication.Mixed)) //Create stream to transmit audio to discord AudioClient
             {
-                try { await output.CopyToAsync(discord); }
+                try { 
+                    byte[] buffer = new byte[100];
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        int read;
+                        var task = new Task(async () => {
+                            while ((read = ffstream.Read(buffer, 0, buffer.Length)) > 0 && Play)
+                            {
+                                await discord.WriteAsync(buffer); //Writing bytes to discord audio stream in realtime
+                            }
+                        });
+                        task.Start();
+                        await Task.Delay(1000); //To avoid "Cannot access to a closed file" error; TODO: fix the error, find another way;
+                    }
+                }
                 finally { await discord.FlushAsync(); }
             }
         }

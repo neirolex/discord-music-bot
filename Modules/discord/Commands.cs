@@ -6,7 +6,6 @@ namespace discord_music_bot {
     public class Commands : InteractionModuleBase<SocketInteractionContext>
     {
         //Dependencies can be accessed through Property injection, public properties with public setters will be set by the service provider
-        public InteractionService InteractionService { get; set; }
         private CommandHandler _handler;
         private DiscordClient _client;
 
@@ -40,13 +39,22 @@ namespace discord_music_bot {
         public async Task PlayCurrentTrack(IVoiceChannel channel = null)
         {
             var path = "tracks/track1.mp3";
-            _client.CreateStream(path);
+            var fileInfo = new FileInfo(path);
+            _client.CreateStream(path); //start local process with ffmpeg
 
             channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
-            var audioClient = await channel.ConnectAsync();
-            await _client.SendAsync(audioClient, path);
+            var audioClient = await channel.ConnectAsync(); //Conect to aoudio channel
+            var tsk = new Task(async () => { await _client.StartTranslateAudio(audioClient, path); }); //translating stream from ffmpeg to discord audio stream
+            tsk.Start();
 
-            await RespondAsync($"___ is now playing");
+            await RespondAsync($"{fileInfo.Name} is now playing");
+        }
+
+        [SlashCommand("stop", "stop", runMode: Discord.Interactions.RunMode.Async)]
+        public async Task StopPlaying(IVoiceChannel channel = null)
+        {
+            _client.Play = false;
+            await RespondAsync($"Playing stoped");
         }
     }
 }
