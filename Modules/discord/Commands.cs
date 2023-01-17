@@ -45,7 +45,8 @@ namespace discord_music_bot {
             var fileInfo = new FileInfo(path);
             _client.AudioService.CreateStream(path); //start local process with ffmpeg
             channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
-            var audioClient = await channel.ConnectAsync(); //Conect to aoudio channel
+            var audioClient = await channel.ConnectAsync(); //Conect to audio channel
+            //TODO: Error - "Task was canceled" if playing after joining;
             
             _client.AudioService.Play = true;
             var tsk = new Task(async () => { await _client.AudioService.StartTranslateAudio(audioClient, path); }); //translating stream from ffmpeg to discord audio stream
