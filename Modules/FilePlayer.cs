@@ -24,7 +24,7 @@ namespace discord_music_bot
         public void Pause(){}
         
         public void Next() {
-            if(_currentTrackId+1 < _queue.Count) {
+            if(_currentTrackId < _queue.Count) {
                 _currentTrackId++;
             }
         }
