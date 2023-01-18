@@ -45,15 +45,16 @@ namespace discord_music_bot {
         }
 
         [SlashCommand("play", "play", runMode: Discord.Interactions.RunMode.Async)]
-        public async Task PlayCurrentTrack(IVoiceChannel channel = null)
+        public async Task PlaySelectedTrack(int trackid, IVoiceChannel channel = null)
         {
             channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
             if(_audioClient == null) {
                 _audioClient = await channel.ConnectAsync();
             }
             
-            var fileInfo = _player.GetCurrentTrack().GetFileInfo();
-            var tsk = new Task(async () => { 
+            //if(_client.AudioService.IsPlaying()) { _client.AudioService.StopPlaying(); } //Stop playing current track (to avoid interrupt stream)
+            var fileInfo = _player.GetTrackById(trackid).GetFileInfo();
+            var tsk = new Task(async () => {
                 await _client.AudioService.InitPlaying(_audioClient, fileInfo.FullName); //translating stream from ffmpeg to discord audio stream
                 });
             tsk.Start();
@@ -63,16 +64,17 @@ namespace discord_music_bot {
 
         [SlashCommand("next", "next", runMode: Discord.Interactions.RunMode.Async)]
         public async Task PlayNextTrack(IVoiceChannel channel = null)
-        {            
+        {          
             channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
             if(_audioClient == null) {
                 _audioClient = await channel.ConnectAsync();
             }
 
-            _client.AudioService.StopPlaying(); //Stop playing current track (to avoid interrupt stream)
+            //if(_client.AudioService.IsPlaying()) { _client.AudioService.StopPlaying(); } //Stop playing current track (to avoid interrupt stream)
             _player.Next(); //Increase current playing track index
             var fileInfo = _player.GetCurrentTrack().GetFileInfo();
-            var tsk = new Task(async () => { 
+            var tsk = new Task(async () => {
+                //cts.Cancel();
                 await _client.AudioService.InitPlaying(_audioClient, fileInfo.FullName); //translating stream from ffmpeg to discord audio stream
                 });
             tsk.Start();
@@ -89,7 +91,7 @@ namespace discord_music_bot {
     
         [SlashCommand("queue", "queue", runMode: Discord.Interactions.RunMode.Async)]
         public async Task ShowQueue() {
-            var q = _player.ListQueue();
+            var q = _player.GetQueue();
             var builder = new StringBuilder("Tracks in queue: \r\n");
             foreach(var i in q) {
                 builder.Append($"{i.Key}: {i.Value.Name} \r\n");

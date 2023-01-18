@@ -4,11 +4,11 @@ namespace discord_music_bot
 {
     public class FilePlayer
     {
-        private IList<AudioFile> _queue = new List<AudioFile>();
+        private IDictionary<int, AudioFile> _queue = new Dictionary<int, AudioFile>();
         private int _currentTrackId;
 
         public FilePlayer() { 
-            _currentTrackId = 0;
+            _currentTrackId = 1;
 
             AudioFile track1 = new AudioFile("track1.mp3", "C:\\_work\\_repo\\discord-music-bot\\tracks\\track1.mp3");
             AddToQueue(track1);
@@ -35,13 +35,7 @@ namespace discord_music_bot
             }
         }
         
-        public IDictionary<int, AudioFile> ListQueue() {
-            var result = new Dictionary<int, AudioFile>();
-            for(int i = 0; i < _queue.Count; i++) {
-                result.Add(i+1, _queue[i]);
-            }
-            return result;
-        }
+        public IDictionary<int, AudioFile> GetQueue() => _queue;
 
         public void SetCurrentTrack(int index) {
             _currentTrackId = index;
@@ -50,9 +44,13 @@ namespace discord_music_bot
         public AudioFile GetCurrentTrack() {
             return _queue[_currentTrackId];
         }
+
+        public AudioFile GetTrackById(int id) {
+            return _queue[id];
+        }
         
-        public void AddToQueue(AudioFile track) => _queue.Add(track);
+        public void AddToQueue(AudioFile track) => _queue.Add(_queue.Count+1, track);
         
-        public void RemoveFromQueue(int id) => _queue.RemoveAt(id);
+        public void RemoveFromQueue(int id) => _queue.Remove(id);
     }
 }

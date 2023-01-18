@@ -5,20 +5,24 @@ using Discord.Audio;
 namespace discord_music_bot
 {    
     public class DiscordAudioService {
-        private bool _play = false;
+        private bool _isplaying = false;
+        private CancellationTokenSource _cts;
 
         public DiscordAudioService() {
-            
+            _cts = new CancellationTokenSource();
         }
+
+        public bool IsPlaying() => _isplaying;
 
         public async Task InitPlaying(IAudioClient client, string path) {
             CreateStream(path);
-            _play = true;
-            await StartTranslateAudio(client, path);
+            _isplaying = true;
+            await TranslateAudio(client, path);
         }
 
         public void StopPlaying() {
-            _play = false;
+            _isplaying = false;
+            //_cts.Cancel();
         }
 
         private Process CreateStream(string path)
@@ -32,7 +36,7 @@ namespace discord_music_bot
             });
         }
 
-        private async Task StartTranslateAudio(IAudioClient client, string path)
+        private async Task TranslateAudio(IAudioClient client, string path)
         {
             using (var ffmpeg = CreateStream(path)) //Create stream based on ffmpeg binary
             using (var ffstream = ffmpeg.StandardOutput.BaseStream)
@@ -44,10 +48,13 @@ namespace discord_music_bot
                     {
                         int read;
                         var task = new Task(async () => {
-                            while ((read = ffstream.Read(buffer, 0, buffer.Length)) > 0 && _play)
+                            while ((read = ffstream.Read(buffer, 0, buffer.Length)) > 0 && _isplaying)
                             {
-                                await discord.WriteAsync(buffer); //Writing bytes to discord audio stream in realtime
-                                //TODO: Fix "task/operation was canceled" when /next commaned invoked
+                                try {
+                                    await discord.WriteAsync(buffer, _cts.Token); //Writing bytes to discord audio stream in realtime
+                                } catch(OperationCanceledException e) {
+                                    break;  //Fixes "task/operation was canceled", but seems like workaround. Think about better approach.
+                                }
                             }
                         });
                         task.Start();
