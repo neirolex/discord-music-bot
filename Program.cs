@@ -40,7 +40,7 @@ public class Program
         {
             return new ServiceCollection()
                 .AddSingleton<FilePlayer>()
-                .AddSingleton<DiscordAudioService>()
+                .AddSingleton(x => new DiscordAudioService(x.GetRequiredService<FilePlayer>()))
                 .AddSingleton<DiscordSocketClient>()
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
                 .AddSingleton<CommandHandler>()

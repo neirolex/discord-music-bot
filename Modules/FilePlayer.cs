@@ -45,6 +45,8 @@ namespace discord_music_bot
             return _queue[_currentTrackId];
         }
 
+        public int GetCurrentTrackId() => _currentTrackId;
+
         public AudioFile GetTrackById(int id) {
             return _queue[id];
         }
