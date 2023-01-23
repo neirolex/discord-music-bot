@@ -10,18 +10,19 @@ namespace discord_music_bot
     {
         private DiscordSocketClient _client;
         private InteractionService _interactionService;
-        private CommandHandler _commandHandler;
+        //private ICommandHandler _commandHandler;
         private ulong _guildId;
-        public DiscordAudioService AudioService; //TODO: Incapslate, make private
+        public IDiscordAudioService _audioService; //TODO: Incapslate, make private
         public DiscordClient(
-                DiscordAudioService audioService, 
+                IDiscordAudioService audioService, 
                 DiscordSocketClient client, 
-                InteractionService interactionService, 
-                CommandHandler commandHandler) {
-            AudioService = audioService;
+                InteractionService interactionService
+                //ICommandHandler commandHandler
+                ) {
+            _audioService = audioService;
             _client = client;
             _interactionService = interactionService;
-            _commandHandler = commandHandler;
+            //_commandHandler = commandHandler;
 
             _guildId = ulong.Parse("706622645105328168");
 
@@ -40,7 +41,7 @@ namespace discord_music_bot
             await _client.StartAsync();
 
             // Initialize the CommandHandler service
-            await _commandHandler.InitializeAsync();
+            //await _commandHandler.InitializeAsync();
         }
 
         private Task LogAsync(LogMessage log)
