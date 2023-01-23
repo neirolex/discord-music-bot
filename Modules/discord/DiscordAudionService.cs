@@ -8,11 +8,10 @@ namespace discord_music_bot
 {    
     public class DiscordAudioService {
         private bool _isplaying = false;
-
         private Process _ffmpeg; //Process of audio translating
+        private FilePlayer _player;
 
         public IAudioClient AudioClient;
-        private FilePlayer _player;
 
         public DiscordAudioService(FilePlayer player) {
             _player = player;
