@@ -51,7 +51,7 @@ namespace discord_music_bot {
             channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
             if (channel == null) { await Context.Channel.SendMessageAsync("You must be in a voice channel."); return; }
 
-            await _client.AudioService.Init(channel);
+            await _client.AudioService.Init(channel); //TODO: It's a bad idea to init service in slashcommand. Should do it somewhere else.
             var fileName = await _client.AudioService.StartPlaying(trackid);
             await RespondAsync($"{fileName} is now playing");
         }

@@ -7,18 +7,15 @@ using System.Diagnostics;
 namespace discord_music_bot
 {    
     public class DiscordAudioService {
-        private string _startTime = "00:00:00";
-        private string _playngTime;
         private bool _isplaying = false;
 
-        private CancellationTokenSource cts;
+        private Process _ffmpeg; //Process of audio translating
 
         public IAudioClient AudioClient;
         private FilePlayer _player;
 
         public DiscordAudioService(FilePlayer player) {
             _player = player;
-            cts = new CancellationTokenSource();
         }
 
         public async Task Init(IVoiceChannel channel) {
@@ -30,7 +27,8 @@ namespace discord_music_bot
         public bool IsPlaying() => _isplaying;
 
         public async Task<string> StartPlaying(int trackid) {
-            //if(IsPlaying()) { StopPlaying(); } //Stop playing current track (to avoid interrupt stream)
+            TerminateStream();
+
             _isplaying = true;
             var fileInfo = _player.GetTrackById(trackid).GetFileInfo();
             await TranslateAudio(fileInfo.FullName);
@@ -40,25 +38,26 @@ namespace discord_music_bot
 
         public void StopPlaying() {
             _isplaying = false;
+            _ffmpeg.Kill();
         }
 
         private async Task TranslateAudio(string path)
         {
-            using (var ffmpeg = CreateStream(path)) //Create process with stream
-            using (var ffstream = ffmpeg.StandardOutput.BaseStream)
+            using (_ffmpeg = CreateStream(path)) //Create process with stream
+            using (var ffstream = _ffmpeg.StandardOutput.BaseStream)
             using (var discord = AudioClient.CreatePCMStream(AudioApplication.Mixed)) //Create stream to transmit audio to discord AudioClient
             {
                 try { 
                     byte[] buffer = new byte[100];
                     int read;
-                    int bytesReaded = 0;
+                    //int bytesReaded = 0;
                     var task = new Task(async () => {
                         while ((read = ffstream.Read(buffer, 0, buffer.Length)) > 0 && _isplaying)
                         {
-                            bytesReaded += read;
-                            Console.WriteLine(path);
+                            //bytesReaded += read;
+                            //Console.WriteLine(path);
                             try {
-                                Console.WriteLine(discord.ToString());
+                                //Console.WriteLine(discord.ToString());
                                 await discord.WriteAsync(buffer); //Writing bytes to discord audio stream in realtime
                             } catch(OperationCanceledException e) {
                                 throw e;
@@ -76,13 +75,22 @@ namespace discord_music_bot
 
         private Process CreateStream(string path)
         {
+            //Starts process with ffpeg player to stream audio from file.
+            //Returns the reference of the process.
             return Process.Start(new ProcessStartInfo
             {
                 FileName = "ffmpeg",
-                Arguments = $"-hide_banner -loglevel panic -i \"{path}\" -ss {_startTime} -ac 2 -f s16le -ar 48000 pipe:1",
+                Arguments = $"-hide_banner -loglevel panic -i \"{path}\" -ac 2 -f s16le -ar 48000 pipe:1",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
             });
+        }
+
+        private void TerminateStream()
+        {
+            if(_ffmpeg != null && !_ffmpeg.HasExited) {
+                _ffmpeg.Kill();
+            }
         }
     }
 }
