@@ -27,8 +27,8 @@ public class Program
         {
             using (var services = ConfigureServices())
             {
-                await services.GetRequiredService<ICommandHandler>().InitializeAsync();
-                await services.GetRequiredService<DiscordClient>().Init();
+                await services.GetRequiredService<ICommandHandler>().InitializeAsync(); //Inializind Discord slash commands handler
+                await services.GetRequiredService<DiscordClient>().Init(); //Initializing Discord client
 
                 var builder = WebApplication.CreateBuilder(args);
                 var app = builder.Build();
