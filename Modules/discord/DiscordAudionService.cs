@@ -8,7 +8,7 @@ namespace discord_music_bot
 {    
     public class DiscordAudioService {
         private bool _isplaying = false;
-        private Process _ffmpeg; //Process of audio translating
+        private Process? _ffmpeg; //Process of audio translating
         private FilePlayer _player;
 
         public IAudioClient AudioClient;
@@ -37,7 +37,7 @@ namespace discord_music_bot
 
         public void StopPlaying() {
             _isplaying = false;
-            _ffmpeg.Kill();
+            TerminateStream();
         }
 
         private async Task TranslateAudio(string path)
@@ -89,6 +89,7 @@ namespace discord_music_bot
         {
             if(_ffmpeg != null && !_ffmpeg.HasExited) {
                 _ffmpeg.Kill();
+                _ffmpeg = null;
             }
         }
     }

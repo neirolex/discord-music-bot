@@ -1,5 +1,3 @@
-using Vlc.DotNet.Core;
-
 namespace discord_music_bot
 {
     public class FilePlayer
