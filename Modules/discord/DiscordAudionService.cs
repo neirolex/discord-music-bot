@@ -6,20 +6,30 @@ using System.Diagnostics;
 
 namespace discord_music_bot
 {    
-    public class DiscordAudioService {
+    public interface IDiscordAudioService {
+        public Task Init(IVoiceChannel channel);
+
+        public IAudioClient GetAudioClinet();
+        public Task<string> StartPlaying(int trackid);
+        public void StopPlaying();
+    }
+
+    public class DiscordAudioService : IDiscordAudioService {
         private bool _isplaying = false;
         private Process? _ffmpeg; //Process of audio translating
-        private FilePlayer _player;
+        private IFilePlayer _player;
 
-        public IAudioClient AudioClient;
+        private IAudioClient _audioClient;
 
-        public DiscordAudioService(FilePlayer player) {
+        public DiscordAudioService(IFilePlayer player) {
             _player = player;
         }
 
+        public IAudioClient GetAudioClinet() => _audioClient;
+
         public async Task Init(IVoiceChannel channel) {
-            if(AudioClient == null) {
-                AudioClient = await channel.ConnectAsync();
+            if(_audioClient == null) {
+                _audioClient = await channel.ConnectAsync();
             }
         }
 
@@ -44,7 +54,7 @@ namespace discord_music_bot
         {
             using (_ffmpeg = CreateStream(path)) //Create process with stream
             using (var ffstream = _ffmpeg.StandardOutput.BaseStream)
-            using (var discord = AudioClient.CreatePCMStream(AudioApplication.Mixed)) //Create stream to transmit audio to discord AudioClient
+            using (var discord = _audioClient.CreatePCMStream(AudioApplication.Mixed)) //Create stream to transmit audio to discord AudioClient
             {
                 try { 
                     byte[] buffer = new byte[100];

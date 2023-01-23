@@ -27,6 +27,7 @@ public class Program
         {
             using (var services = ConfigureServices())
             {
+                await services.GetRequiredService<ICommandHandler>().InitializeAsync();
                 await services.GetRequiredService<DiscordClient>().Init();
 
                 var builder = WebApplication.CreateBuilder(args);
@@ -39,17 +40,13 @@ public class Program
         private ServiceProvider ConfigureServices()
         {
             return new ServiceCollection()
-                .AddSingleton<FilePlayer>()
-                .AddSingleton(x => new DiscordAudioService(x.GetRequiredService<FilePlayer>()))
+                .AddSingleton<IFilePlayer, FilePlayer>()
+                .AddSingleton<IDiscordAudioService, DiscordAudioService>()
                 .AddSingleton<DiscordSocketClient>()
-                .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
-                .AddSingleton<CommandHandler>()
-                .AddSingleton(x => new DiscordClient(
-                    x.GetRequiredService<DiscordAudioService>(), 
-                    x.GetRequiredService<DiscordSocketClient>(), 
-                    x.GetRequiredService<InteractionService>(), 
-                    x.GetRequiredService<CommandHandler>()
-                    ))
+                .AddSingleton<InteractionService>()
+                .AddSingleton<InteractionModuleBase<SocketInteractionContext>, Commands>()
+                .AddSingleton<ICommandHandler, CommandHandler>()
+                .AddSingleton<DiscordClient>()
                 .BuildServiceProvider();
         }
     }

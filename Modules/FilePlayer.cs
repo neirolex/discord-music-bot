@@ -1,6 +1,19 @@
 namespace discord_music_bot
 {
-    public class FilePlayer
+    public interface IFilePlayer {
+        public AudioFile GetTrackById(int id);
+        public int GetCurrentTrackId();
+
+        public void Play();
+        public void Stop();
+        public void Pause();
+        public void Next();
+        public void Prev();
+
+        public IDictionary<int, AudioFile> GetQueue();
+    }
+
+    public class FilePlayer : IFilePlayer
     {
         private IDictionary<int, AudioFile> _queue = new Dictionary<int, AudioFile>();
         private int _currentTrackId;
@@ -32,8 +45,6 @@ namespace discord_music_bot
                 _currentTrackId--;
             }
         }
-        
-        public IDictionary<int, AudioFile> GetQueue() => _queue;
 
         public void SetCurrentTrack(int index) {
             _currentTrackId = index;
@@ -49,6 +60,8 @@ namespace discord_music_bot
             return _queue[id];
         }
         
+        public IDictionary<int, AudioFile> GetQueue() => _queue;
+
         public void AddToQueue(AudioFile track) => _queue.Add(_queue.Count+1, track);
         
         public void RemoveFromQueue(int id) => _queue.Remove(id);

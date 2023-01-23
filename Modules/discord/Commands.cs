@@ -7,15 +7,13 @@ using System.Text;
 namespace discord_music_bot {
     public class Commands : InteractionModuleBase<SocketInteractionContext>
     {
-        //Dependencies can be accessed through Property injection, public properties with public setters will be set by the service provider
-        private CommandHandler _handler;
+        //Dependencies can be accessed through Property injection, public properties with public setters will be set by the service provide
         private DiscordClient _client;
-        private FilePlayer _player;
+        private IFilePlayer _player;
 
         //Constructor injection is also a valid way to access the dependecies
-        public Commands (CommandHandler handler, DiscordClient client, FilePlayer player)
+        public Commands (DiscordClient client, IFilePlayer player)
         {
-            _handler = handler;
             _client = client;
             _player = player;
         }
@@ -27,7 +25,7 @@ namespace discord_music_bot {
             channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
             if (channel == null) { await Context.Channel.SendMessageAsync("You must be in a voice channel."); return; }
 
-            await _client.AudioService.Init(channel);
+            await _client._audioService.Init(channel);
             await RespondAsync($"Bot joined to the channel {channel.Name}");
         }
 
@@ -35,12 +33,12 @@ namespace discord_music_bot {
         public async Task LeaveChannel(IVoiceChannel channel = null)
         {
             //Get the audio channel
-            _client.AudioService.StopPlaying();
+            _client._audioService.StopPlaying();
             await Task.Delay(1000); //To avoid error of interupting audio stream before it's closed; TODO: fix the error, find another way;
 
             channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
             await channel.DisconnectAsync();
-            _client.AudioService.AudioClient.Dispose();
+            _client._audioService.GetAudioClinet().Dispose();
             await RespondAsync($"Bot left the channel");
         }
 
@@ -51,8 +49,8 @@ namespace discord_music_bot {
             channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
             if (channel == null) { await Context.Channel.SendMessageAsync("You must be in a voice channel."); return; }
 
-            await _client.AudioService.Init(channel); //TODO: It's a bad idea to init service in slashcommand. Should do it somewhere else.
-            var fileName = await _client.AudioService.StartPlaying(trackid);
+            await _client._audioService.Init(channel); //TODO: It's a bad idea to init service in slashcommand. Should do it somewhere else.
+            var fileName = await _client._audioService.StartPlaying(trackid);
             await RespondAsync($"{fileName} is now playing");
         }
 
@@ -60,14 +58,14 @@ namespace discord_music_bot {
         public async Task PlayNextTrack(IVoiceChannel channel = null)
         {          
             _player.Next(); //Increase current playing track index
-            var fileName = await _client.AudioService.StartPlaying(_player.GetCurrentTrackId());
+            var fileName = await _client._audioService.StartPlaying(_player.GetCurrentTrackId());
             await RespondAsync($"{fileName} is now playing");
         }
 
         [SlashCommand("stop", "stop", runMode: Discord.Interactions.RunMode.Async)]
         public async Task StopPlaying(IVoiceChannel channel = null)
         {
-            _client.AudioService.StopPlaying();
+            _client._audioService.StopPlaying();
             await RespondAsync($"Playing stoped");
         }
     
