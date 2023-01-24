@@ -1,8 +1,7 @@
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace discord_music_bot
 {
@@ -13,18 +12,22 @@ namespace discord_music_bot
         //private ICommandHandler _commandHandler;
         private ulong _guildId;
         public IDiscordAudioService _audioService; //TODO: Incapslate, make private
+        private readonly Options _options;
+
         public DiscordClient(
                 IDiscordAudioService audioService, 
                 DiscordSocketClient client, 
-                InteractionService interactionService
+                InteractionService interactionService,
+                IOptions<Options> options
                 //ICommandHandler commandHandler
                 ) {
+            _options = options.Value;
             _audioService = audioService;
             _client = client;
             _interactionService = interactionService;
             //_commandHandler = commandHandler;
 
-            _guildId = ulong.Parse("706622645105328168");
+            _guildId = _options.DiscordGuildId;
 
             //Logging
             _client.Log += LogAsync;
@@ -35,7 +38,7 @@ namespace discord_music_bot
         }
 
         public async Task Init() {
-            var token = "MTA2NDUyNzMwNDE0NDk4NjEzNA.G2elQs._r-AtI5BCRcUpph4LPZ8GS2qXTDDxfFhIUyP3w";
+            var token = _options.DiscordApiToken;
 
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
