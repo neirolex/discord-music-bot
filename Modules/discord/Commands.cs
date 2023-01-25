@@ -25,7 +25,7 @@ namespace discord_music_bot {
             channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
             if (channel == null) { await Context.Channel.SendMessageAsync("You must be in a voice channel."); return; }
 
-            await _client._audioService.Init(channel);
+            await _client._audioService.Init(channel); //TODO: It's a bad idea to init service in slashcommand. Should do it somewhere else.
             await RespondAsync($"Bot joined to the channel {channel.Name}");
         }
 
