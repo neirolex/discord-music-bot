@@ -62,10 +62,8 @@ namespace discord_music_bot
                     var task = new Task(async () => {
                         while ((read = ffstream.Read(buffer, 0, buffer.Length)) > 0 && _isplaying)
                         {
-                            //bytesReaded += read;
                             //Console.WriteLine(path);
                             try {
-                                //Console.WriteLine(discord.ToString());
                                 await discord.WriteAsync(buffer); //Writing bytes to discord audio stream in realtime
                             } catch(OperationCanceledException e) {
                                 throw e;
