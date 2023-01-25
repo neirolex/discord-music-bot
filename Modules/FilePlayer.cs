@@ -1,6 +1,10 @@
+using System.Diagnostics;
+
 namespace discord_music_bot
 {
     public interface IFilePlayer {
+        public Process CreateStream(string path);
+        public void TerminateStream();
         public AudioFile GetTrackById(int id);
         public int GetCurrentTrackId();
 
@@ -15,6 +19,7 @@ namespace discord_music_bot
 
     public class FilePlayer : IFilePlayer
     {
+        private Process? _ffmpeg; //Process of audio translating
         private IDictionary<int, AudioFile> _queue = new Dictionary<int, AudioFile>();
         private int _currentTrackId;
 
@@ -65,5 +70,30 @@ namespace discord_music_bot
         public void AddToQueue(AudioFile track) => _queue.Add(_queue.Count+1, track);
         
         public void RemoveFromQueue(int id) => _queue.Remove(id);
+
+        public Process CreateStream(string path)
+        {
+            //Starts process with ffpeg player to stream audio from file.
+            //Returns the reference of the process.
+
+            _ffmpeg = Process.Start(new ProcessStartInfo
+            {
+                FileName = "ffmpeg",
+                Arguments = $"-hide_banner -loglevel panic -i \"{path}\" -ac 2 -f s16le -ar 48000 pipe:1",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+            });
+            return _ffmpeg;
+        }
+
+        public void TerminateStream()
+        {
+            if(_ffmpeg != null) {
+                _ffmpeg.Kill();
+                _ffmpeg = null;
+            }
+        }
+
+        public Process GetProcess() => _ffmpeg;
     }
 }
