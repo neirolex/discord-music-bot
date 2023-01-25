@@ -16,7 +16,6 @@ namespace discord_music_bot
 
     public class DiscordAudioService : IDiscordAudioService {
         private bool _isplaying = false;
-        private Process? _ffmpeg; //Process of audio translating
         private IFilePlayer _player;
 
         private IAudioClient _audioClient;
@@ -52,8 +51,8 @@ namespace discord_music_bot
 
         private async Task TranslateAudio(string path)
         {
-            using (_ffmpeg = CreateStream(path)) //Create process with stream
-            using (var ffstream = _ffmpeg.StandardOutput.BaseStream)
+            using (var ffmpeg = _player.CreateStream(path)) //Create process with stream
+            using (var ffstream = ffmpeg.StandardOutput.BaseStream)
             using (var discord = _audioClient.CreatePCMStream(AudioApplication.Mixed)) //Create stream to transmit audio to discord AudioClient
             {
                 try { 
@@ -82,25 +81,9 @@ namespace discord_music_bot
             }
         }
 
-        private Process CreateStream(string path)
-        {
-            //Starts process with ffpeg player to stream audio from file.
-            //Returns the reference of the process.
-            return Process.Start(new ProcessStartInfo
-            {
-                FileName = "ffmpeg",
-                Arguments = $"-hide_banner -loglevel panic -i \"{path}\" -ac 2 -f s16le -ar 48000 pipe:1",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-            });
-        }
-
         private void TerminateStream()
         {
-            if(_ffmpeg != null && !_ffmpeg.HasExited) {
-                _ffmpeg.Kill();
-                _ffmpeg = null;
-            }
+            _player.TerminateStream();
         }
     }
 }

@@ -14,9 +14,9 @@ public class Program
         public Program()
         {
             // Config init
-            var _builder = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory);
-                //.AddJsonFile(path: "config.json");  
+            var _builder = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory)
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile(path: "appsettings.json");  
       
             _config = _builder.Build();
         }
@@ -31,6 +31,7 @@ public class Program
                 await services.GetRequiredService<DiscordClient>().Init(); //Initializing Discord client
 
                 var builder = WebApplication.CreateBuilder(args);
+
                 var app = builder.Build();
                 app.Run();
             }
@@ -40,6 +41,7 @@ public class Program
         private ServiceProvider ConfigureServices()
         {
             return new ServiceCollection()
+                .AddOptions().Configure<Options>(_config)
                 .AddSingleton<IFilePlayer, FilePlayer>()
                 .AddSingleton<IDiscordAudioService, DiscordAudioService>()
                 .AddSingleton<DiscordSocketClient>()
