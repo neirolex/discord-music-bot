@@ -1,3 +1,7 @@
+# General  
+This app is designed to work with local audio files and translate them to Discord, working as a bot app. 
+
+# Technical info  
 * For transmitting audio, following libs are required;
 
     Sodium and Opus (Both libraries must be placed in the runtime directory of the bot (bin/debug or where "dotnet run" start from));  
